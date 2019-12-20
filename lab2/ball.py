@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import messagebox as mb
 from random import randrange as rnd, choice
 
-# init
 root = Tk()
 width = 1200
 height = 700
@@ -14,8 +13,8 @@ main_menu.add_cascade(label='Меню', menu=menu)
 mode = Menu(menu, tearoff=0)
 canv = Canvas(root, bg='White')
 canv.pack(fill=BOTH, expand=1)
-colors = ['red', 'orange', 'yellow', 'green', 'blue', 'magenta', 'cyan']
-scoreLabel = Label(text="Текущий счет: 0, Рекорд: 0", font=("Comic Sans MS", 12, "bold"))
+colors = ['red', 'orange', 'yellow', 'green', 'blue']
+scoreLabel = Label(text="Счет: 0, Текущий рекорд: 0", font=("Arial", 12))
 scoreLabel.config(bd=0, bg='white')
 scoreLabel.pack()
 score = 0
@@ -25,8 +24,6 @@ obj_count = 0
 difficulty = IntVar()
 difficulty.set(0)
 
-
-# creating new one
 def new_ball():
     global obj_count
     r = rnd(30, 50)
@@ -44,23 +41,22 @@ def new_ball():
                 x = rnd(100, width - 100)
                 y = rnd(100, height - 100)
                 f = 0
-    vx = rnd(0, 7 + 2 * score // 20) - 3 - score // 20  # velocity depends on score
+    vx = rnd(0, 7 + 2 * score // 20) - 3 - score // 20  
     vy = rnd(0, 7 + 2 * score // 20) - 3 - score // 20
     if vx**2 + vy**2 == 0:
         vx = 1
     obj_count += 1
-    # first member is ball, second is its lifetime, third is its velocity
+  
     objects.append([canv.create_oval(x-r, y-r, x+r, y+r, fill=choice(colors), width=0), 0, [vx, vy]])
 
 
-# click event listener
 def click(event):
     global score, life, obj_count, high1, high2, high3
     for target in objects:
-        x = (canv.coords(target[0])[0] + canv.coords(target[0])[2]) / 2     # we're getting target's coords
+        x = (canv.coords(target[0])[0] + canv.coords(target[0])[2]) / 2 
         y = (canv.coords(target[0])[1] + canv.coords(target[0])[3]) / 2
         r = (canv.coords(target[0])[2] - canv.coords(target[0])[0]) / 2
-        if (x - event.x)**2 + (y - event.y)**2 <= r*r:  # and check if we hit it
+        if (x - event.x)**2 + (y - event.y)**2 <= r*r:  
             score += 1
             if difficulty.get() == 1:
                 life += obj_count
@@ -71,7 +67,7 @@ def click(event):
                     save.write(str(high2)+'\n')
                     save.write(str(high3)+'\n')
                     save.close()
-                scoreLabel['text'] = "Текущий счет: " + str(score) + ", Жизни: " + str(life) + ", Рекорд: " + str(high2)
+                scoreLabel['text'] = "Текущий счет: " + str(score) + ", Рекорд: " + str(high2)
             else:
                 if score > high1:
                     high1 = score
@@ -85,7 +81,6 @@ def click(event):
             objects.remove(target)
             obj_count -= 1
 
-
 # updater
 def update():
     # difficulty depends on score
@@ -98,7 +93,7 @@ def update():
             obj_count -= 1
             if difficulty.get() == 1:
                 life -= 1
-                scoreLabel['text'] = "Текущий счет: " + str(score) + ", Жизни: " + str(life) + ", Рекорд: " + str(high2)
+                scoreLabel['text'] = "Текущий счет: " + str(score) + ", Рекорд: " + str(high2)
                 if life <= 0:
                     mb.showinfo("Loser", "Вы проиграли\nСчет: " + str(score))
                     new_game()
@@ -126,14 +121,13 @@ def update():
                         target[2][1] -= 2 * y_proj
             canv.move(target[0], target[2][0], target[2][1])
 
-    needed_num = (score // 10) + 1      # this is formula for balls current number
+    needed_num = (score // 10) + 1    
     if obj_count < needed_num:
         for i in range(needed_num - obj_count):
             new_ball()
     root.after(10, update)
 
-
-def new_game():     # start new game
+def new_game():    
     global obj_count, score, life
     obj_count = 0
     canv.delete(ALL)
@@ -141,22 +135,17 @@ def new_game():     # start new game
     score = 0
     life = 0
     if difficulty.get() == 0:
-        scoreLabel['text'] = "Текущий счет: 0, Рекорд: " + str(high1)
+        scoreLabel['text'] = "Счет: 0, Рекорд: " + str(high1)
     elif difficulty.get() == 1:
-        scoreLabel['text'] = "Текущий счет: 0, Жизни: 10, Рекорд: " + str(high2)
+        scoreLabel['text'] = "Счет: 0, Рекорд: " + str(high2)
         life = 10
     else:
-        scoreLabel['text'] = "Текущий счет: 0, Жизни: 30, Рекорд: " + str(high2)
+        scoreLabel['text'] = "Счет: 0, Рекорд: " + str(high2)
         life = 30
-
 
 new_ball()
 canv.bind('<Button-1>', click)
-mode.add_radiobutton(label='endless mode', var=difficulty, value=0, command=new_game)   # menu setting
-mode.add_radiobutton(label='easy mode', var=difficulty, value=1, command=new_game)
-mode.add_radiobutton(label='hardcore', var=difficulty, value=2, command=new_game)
 menu.add_command(label='Новая игра', command=new_game)
-menu.add_cascade(label='Режим', menu=mode)
 saved = open("save.dat")
 arr = saved.readlines()
 saved.close()
@@ -170,7 +159,7 @@ if len(arr) == 0:
 else:
     if int(arr[0]) > high1:
         high1 = int(arr[0])
-        scoreLabel['text'] = "Текущий счет: 0, Рекорд: " + str(high1)
+        scoreLabel['text'] = "счет: 0, Рекорд: " + str(high1)
     if int(arr[1]) > high2:
         high2 = int(arr[1])
     if int(arr[2]) > high3:
